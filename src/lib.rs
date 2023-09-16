@@ -71,8 +71,8 @@ impl Invaders {
         new
     }
 
-    pub fn raster(&self) -> &[u8] {
-        &self.ram[0x2400..0x4000]
+    pub fn raster(&mut self) -> &mut [u8] {
+        &mut self.ram[0x2400..0x4000]
     }
 }
 
