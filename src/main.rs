@@ -44,7 +44,6 @@ fn main() -> Result<(), Box<(dyn std::error::Error + 'static)>> {
         #[cfg(not(debug_assertions))]
         machine.next().unwrap();
         while interrupted.elapsed() >= FRAME_LENGTH {
-            eprintln!("{interrupted:?}");
             interrupted += FRAME_LENGTH;
             let interrupts = machine.reset_to(half)?;
             if interrupts {
@@ -57,24 +56,24 @@ fn main() -> Result<(), Box<(dyn std::error::Error + 'static)>> {
                     for shift in 0..8 {
                         let value = 255 * (byte >> shift & 1) as u8;
                         renderer.set_draw_color(Color::RGB(value, value, value));
-                        renderer.fill_rect(FRect::from(pixel))?; 
+                        renderer.fill_rect(FRect::from(pixel))?;
                     }
                     pixel.offset(0, -(pixel.height() as i32));
                 }
-            }
 /*
-            let mut frame = sdl2::surface::Surface::from_data(machine.raster(), SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT / 8, Index1LSB)?;
-            frame.set_palette(&colors)?;
-            let screen = scribe.create_texture_from_surface(frame)?;
-            let frame = Rect::new(
-                SCREEN_WIDTH as i32 - SCREEN_HEIGHT as i32,
-                SCREEN_HEIGHT as i32 - SCREEN_WIDTH as i32,
-                SCREEN_HEIGHT * 2, 
-                SCREEN_WIDTH * 2,
-            );
-            renderer.copy_ex(&screen, None, frame, 90.0, None, false, false)?;
- */ 
-            renderer.present();
+				let mut frame = sdl2::surface::Surface::from_data(machine.raster(), SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT / 8, Index1LSB)?;
+				frame.set_palette(&colors)?;
+				let screen = scribe.create_texture_from_surface(frame)?;
+				let frame = Rect::new(
+					SCREEN_WIDTH as i32 - SCREEN_HEIGHT as i32,
+					SCREEN_HEIGHT as i32 - SCREEN_WIDTH as i32,
+					SCREEN_HEIGHT * 2,
+					SCREEN_WIDTH * 2,
+				);
+				renderer.copy_ex(&screen, None, frame, 90.0, None, false, false)?;
+ */
+	            renderer.present();
+            }
         }
     }
 }

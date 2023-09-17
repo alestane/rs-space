@@ -9,5 +9,5 @@ edition = "2021"
 debug = true
 
 [dependencies]
-lemurs = { path = "../lemurs/_8080", package = "_8080", features=["open", "std"]}
+lemurs = { version = ">= 0.3", package = "lemurs-8080", features=["open", "std"]}
 sdl3 = { version = ">= 0.5", features = ["bundled"] }
