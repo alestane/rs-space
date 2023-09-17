@@ -5,6 +5,9 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[profile.release]
+debug = true
+
 [dependencies]
-lemurs = { path = "../lemurs/_8080", package = "_8080"}
-sdl2 = { version = ">= 0.35.2", features = ["bundled"] }
+lemurs = { path = "../lemurs/_8080", package = "_8080", features=["open", "std"]}
+sdl3 = { version = ">= 0.5", features = ["bundled"] }
