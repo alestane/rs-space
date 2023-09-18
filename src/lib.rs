@@ -2,7 +2,7 @@
 
 extern crate lemurs;
 
-use std::num::Wrapping; 
+use std::{num::Wrapping, ops::{AddAssign, SubAssign}}; 
 #[allow(non_camel_case_types)]
 mod bits {
     pub type u8 = std::num::Wrapping<core::primitive::u8>;
@@ -30,30 +30,7 @@ pub struct Invaders {
     ram: [u8; 0x10000], 
     controls: u8,
     bits: Shifter,
-}
-
-impl lemurs::Harness for Invaders {
-    fn read(&self, from: bits::u16) -> bits::u8 {
-        Wrapping(self.ram[from.0 as usize])
-    }
-    fn write(&mut self, value: bits::u8, to: bits::u16) {
-        self.ram[to.0 as usize] = value.0;
-    }
-    fn input(&mut self, port: u8) -> bits::u8 {
-        match port {
-            1 => Wrapping(self.controls),
-            3 => Wrapping(self.bits.window()),
-            _ => Wrapping(0),
-        }
-    }
-    fn output(&mut self, port: u8, value: bits::u8) {
-        match port {
-            2 => self.bits.align(value.0), 
-            4 => self.bits.insert(value.0),
-            _ => ()
-        }
-    }
-}
+}    
 
 impl Invaders {
     pub fn install(&mut self) -> lemurs::Machine<Self, &mut Self> {
@@ -71,9 +48,44 @@ impl Invaders {
         new
     }
 
-    pub fn raster(&self) -> &[u8] {
-        &self.ram[0x2400..0x4000]
+    pub fn raster(&mut self) -> &mut [u8] {
+        &mut self.ram[0x2400..0x4000]
     }
 }
+
+impl AddAssign<u8> for Invaders {
+    fn add_assign(&mut self, rhs: u8) {
+        self.controls |= 1 << rhs;
+    }
+}
+
+impl SubAssign<u8> for Invaders {
+    fn sub_assign(&mut self, rhs: u8) {
+        self.controls &= !(1 << rhs);
+    }
+}
+
+impl lemurs::Harness for Invaders {
+    fn read(&self, from: bits::u16) -> bits::u8 {
+        Wrapping(self.ram[from.0 as usize])
+    }    
+    fn write(&mut self, value: bits::u8, to: bits::u16) {
+        self.ram[to.0 as usize] = value.0;
+    }    
+    fn input(&mut self, port: u8) -> bits::u8 {
+        match port {
+            1 => Wrapping(self.controls),
+            3 => Wrapping(self.bits.window()),
+            _ => Wrapping(0),
+        }    
+    }    
+    fn output(&mut self, port: u8, value: bits::u8) {
+        match port {
+            2 => self.bits.align(value.0), 
+            4 => self.bits.insert(value.0),
+            _ => ()
+        }    
+    }    
+}    
 
 const INVADERS: &[u8] = include_bytes!("invaders.bin");
