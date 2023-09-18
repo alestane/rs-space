@@ -1,0 +1,6 @@
+{
+    "git.requireGitUserConfig": false,
+    "git.terminalAuthentication": false,
+    "github.gitAuthentication": false,
+    "github.gitProtocol": "ssh"
+}
