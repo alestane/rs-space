@@ -2,12 +2,8 @@
 name = "rs_space"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[profile.release]
-debug = true
+repository = "https://github.com/alestane/rs-space"
 
 [dependencies]
 lemurs = { version = ">= 0.3", package = "lemurs-8080", features=["open", "std"]}
-sdl3 = { version = ">= 0.5", features = ["bundled"] }
+sdl3 = { version = ">= 0.5", features = ["bundled"]}
