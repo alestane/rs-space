@@ -1,10 +1,10 @@
 extern crate sdl3;
 
 use rs_space::Invaders;
-use std::{time::{Instant, Duration}, num::NonZeroU8, iter::successors};
+use std::time::{Instant, Duration};
 use sdl3::{
     rect::Rect, render::FRect, 
-    pixels::{Color, Palette}, keyboard::Keycode
+    pixels::{Color, Palette, PixelFormatEnum::Index1MSB}, keyboard::Keycode
 };
 
 const SCREEN_WIDTH: u32 = 224;
@@ -14,7 +14,7 @@ const SCREEN_SCALE: u32 = 4;
 const FRAME_LENGTH: Duration = match Duration::from_secs(1).checked_div(60) {None => panic!(), Some(d) => d};
 
 fn main() -> Result<(), Box<(dyn std::error::Error + 'static)>> {
-    let (mut input, mut renderer, _scribe) = {
+    let (mut input, mut renderer, scribe) = {
         let libsdl = sdl3::init()?;
         let video = libsdl.video()?;
         let input = libsdl.event_pump()?;
@@ -29,7 +29,7 @@ fn main() -> Result<(), Box<(dyn std::error::Error + 'static)>> {
     };
     let mut board = Invaders::new();
     let mut machine = board.install();
-    let _colors = Palette::with_colors(
+    let colors = Palette::with_colors(
         &[Color::RGB(0, 0, 0), Color::RGB(255, 255, 255), ]
     )?;
     let mut half = 1;
@@ -37,7 +37,7 @@ fn main() -> Result<(), Box<(dyn std::error::Error + 'static)>> {
     let mut interrupted = start;
     let mut frames: usize = 0;
     let mut ops: usize = 0;
-    let mut buffer = [machine.raster().to_owned(), machine.raster().to_owned()];
+    // let mut buffer = [machine.raster().to_owned(), machine.raster().to_owned()];
     'game: loop {
         for event in input.poll_iter() {
             use sdl3::event::Event;
@@ -77,35 +77,13 @@ fn main() -> Result<(), Box<(dyn std::error::Error + 'static)>> {
             if interrupts {
                 frames += 1;
                 half = 3 - half;
-                renderer.set_draw_color(Color::RGB(0, 0, 0));
-            //    renderer.clear();
-//*/ 
-                let buffer = &mut buffer[half - 1];
-                for (i, (state, former)) in machine.raster().iter().copied().zip(buffer.iter_mut()).enumerate() {
-                    let i = i as i32;
-                    let mut pixel = Rect::new( 
-                        SCREEN_SCALE as i32 * i / 32, 
-                        SCREEN_SCALE as i32 * (SCREEN_HEIGHT as i32 - 8 * (i % 32)), 
-                        SCREEN_SCALE, SCREEN_SCALE
-                    );
-                    if state != *former {
-                        for (shift, mask) in successors(NonZeroU8::new(state ^ *former), |m| NonZeroU8::new(m.get() >> 1)).enumerate() {
-                            if mask.get() & 0x01 != 0 {
-                                let value = 255 * (state >> shift & 1) as u8;
-                                renderer.set_draw_color(Color::RGBA(value, value, value, 255));
-                                renderer.draw_rect(FRect::from(pixel))?;
-                            }
-                            pixel.y -= pixel.height() as i32;
-                        }
-                        *former = state;
-                    }
-                }
-//*/
-/*
-				let mut frame = sdl3::surface::Surface::from_data(
-                    machine.raster(), 
+
+                let mut buffer = machine.raster().to_owned();
+                for byte in &mut buffer { *byte = byte.reverse_bits(); }
+                let mut frame = sdl3::surface::Surface::from_data(
+                    buffer.as_mut(), 
                     SCREEN_HEIGHT, SCREEN_WIDTH, 
-                    SCREEN_HEIGHT / 8, Index1LSB
+                    SCREEN_HEIGHT / 8, Index1MSB
                 )?;
 				frame.set_palette(&colors)?;
 				let screen = scribe.create_texture_from_surface(frame)?;
@@ -116,7 +94,6 @@ fn main() -> Result<(), Box<(dyn std::error::Error + 'static)>> {
 					SCREEN_WIDTH * SCREEN_SCALE,
 				);
 				renderer.copy_ex(&screen, None, FRect::from(frame), -90.0, None, false, false)?;
- */
 	            renderer.present();
             }
         }
