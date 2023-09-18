@@ -4,7 +4,7 @@ use rs_space::Invaders;
 use std::time::{Instant, Duration};
 use sdl3::{
     rect::Rect, render::FRect, 
-    pixels::{Color, Palette, PixelFormatEnum::Index1LSB}, keyboard::Keycode
+    pixels::{Color, Palette}, keyboard::Keycode
 };
 
 const SCREEN_WIDTH: u32 = 224;
