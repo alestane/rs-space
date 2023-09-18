@@ -1,7 +1,7 @@
 extern crate sdl3;
 
 use rs_space::Invaders;
-use std::time::{Instant, Duration};
+use std::{time::{Instant, Duration}, num::NonZeroU8, iter::successors};
 use sdl3::{
     rect::Rect, render::FRect, 
     pixels::{Color, Palette}, keyboard::Keycode
@@ -37,6 +37,7 @@ fn main() -> Result<(), Box<(dyn std::error::Error + 'static)>> {
     let mut interrupted = start;
     let mut frames: usize = 0;
     let mut ops: usize = 0;
+    let mut buffer = [machine.raster().to_owned(), machine.raster().to_owned()];
     'game: loop {
         for event in input.poll_iter() {
             use sdl3::event::Event;
@@ -77,21 +78,26 @@ fn main() -> Result<(), Box<(dyn std::error::Error + 'static)>> {
                 frames += 1;
                 half = 3 - half;
                 renderer.set_draw_color(Color::RGB(0, 0, 0));
-                renderer.clear();
+            //    renderer.clear();
 //*/ 
-                for (i, byte) in machine.raster().iter().copied().enumerate() {
+                let buffer = &mut buffer[half - 1];
+                for (i, (state, former)) in machine.raster().iter().copied().zip(buffer.iter_mut()).enumerate() {
                     let i = i as i32;
                     let mut pixel = Rect::new( 
                         SCREEN_SCALE as i32 * i / 32, 
                         SCREEN_SCALE as i32 * (SCREEN_HEIGHT as i32 - 8 * (i % 32)), 
                         SCREEN_SCALE, SCREEN_SCALE
                     );
-                    for shift in 0..8 {
-                        let value = 255 * (byte >> shift & 1) as u8;
-                        // if value != 0 { total = value as usize; }
-                        renderer.set_draw_color(Color::RGBA(value, value, value, 255));
-                        renderer.draw_rect(FRect::from(pixel))?;
-                        pixel.y -= pixel.height() as i32;
+                    if state != *former {
+                        for (shift, mask) in successors(NonZeroU8::new(state ^ *former), |m| NonZeroU8::new(m.get() >> 1)).enumerate() {
+                            if mask.get() & 0x01 != 0 {
+                                let value = 255 * (state >> shift & 1) as u8;
+                                renderer.set_draw_color(Color::RGBA(value, value, value, 255));
+                                renderer.draw_rect(FRect::from(pixel))?;
+                            }
+                            pixel.y -= pixel.height() as i32;
+                        }
+                        *former = state;
                     }
                 }
 //*/
