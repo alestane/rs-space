@@ -6,4 +6,4 @@ repository = "https://github.com/alestane/rs-space"
 
 [dependencies]
 lemurs = { version = ">= 0.3", package = "lemurs-8080", features=["open", "std"]}
-sdl3 = { version = ">= 0.5", features = ["bundled"]}
+sdl3 = { version = ">= 0.5"}
